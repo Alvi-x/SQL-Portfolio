@@ -1,1 +1,18 @@
--
+Using CTE the code counts the number of Shareholders in a company and displays their gender based on their profile
+
+WITH SH_COUNT AS(
+SELECT EntCode, AddrCode,(SELECT  COUNT(EntCode) FROM Shareholders WHERE EntCode = '12030230' AND SharesHeld >0) AS No_of_SH
+FROM Shareholders WHERE EntCode = '12030230' AND SharesHeld >0 GROUP BY EntCode, AddrCode)
+
+ 
+
+SELECT TOP 1 CASE WHEN SHC.No_of_SH = 1 AND R.RefType = 'I' THEN( 
+            CASE WHEN C.Gender = 'F' THEN 'her' 
+            WHEN C.Gender = 'M' THEN 'his' 
+            WHEN C.Gender = 'U' THEN 'his/her' 
+            WHEN C.Gender = 'N' THEN 'his/her' END)
+       WHEN SHC.No_of_SH = 1 AND R.Reftype = 'C' THEN 'its' 
+       WHEN SHC.No_of_SH > 1 THEN 'their' END AS GenderText
+FROM SH_COUNT SHC
+INNER JOIN Compliance C ON C.AddrCode = SHC.AddrCode
+INNER JOIN CR_RefMaster R ON R.RefCode = SHC.AddrCode-
