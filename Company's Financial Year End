@@ -1,0 +1,6 @@
+--Financial year, write the word '[Financial Year End Date]' when not available
+
+[/FYEAR=SELECT CASE WHEN (AcctYearEnd IS NULL OR AcctYearEnd='') THEN '[Financial Year End Date]' END AS FinYearEndNull,
+FORMAT(AcctYearEnd, 'dd MMMM yyyy')  AS FinYearEnd,
+CASE WHEN (AcctYearEnd IS NULL OR AcctYearEnd='') THEN '[Year]' END AS AccYearNull, FORMAT(AcctYearEnd, 'yyyy') AS AccYearEnd
+FROM Entity WHERE EntCode = '(-EntCode-)'/]
