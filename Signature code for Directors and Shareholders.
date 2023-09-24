@@ -1,0 +1,42 @@
+This is the code for the signature format:
+
+ 
+
+--Signing Director - Both Individual & Corporate
+
+(+DirSign.ALL-TAB\1:*L\2:*L\3:*L+)
+
+ 
+
+--Signing Shareholder - Both Individual & Corporate
+(+SHRC.ALL-TAB\1:*L\2:*L\3:*L+)
+
+ 
+
+______________________________________________________________________________________________________________________
+
+ 
+
+______________________________________________________________________________________________________________________
+
+ 
+
+--Signing Director - Both Individual & Corporate
+
+[/DIRSign=SELECT '________________________',
+CASE WHEN RM.RefType <> 'I' THEN '[NAME] for and on behalf of '+CHAR(10)+RM.Name
+    WHEN RM.RefType = 'I' THEN (CASE WHEN NameFormat = 1 THEN RM.Initials + ' '+RM.Name +' '+ RM.ChnsName WHEN NameFormat = 2 THEN RM.Name +' '+ RM.Initials +' '+ RM.ChnsName END) 
+    ELSE RM.Name +' '+ RM.ChnsName END AS FullName,
+    CASE WHEN O.Position IS NULL OR O.Position = '' THEN OfficerText ELSE O.Position END AS Position, ''
+FROM Officers O INNER JOIN RefMaster RM ON RM.RefCode=O.AddrCode
+WHERE O.OfficerType='DIR' AND O.[Status]='A' AND O.DateResign IS NULL AND O.EntCode='(-EntCode-)'/]
+
+
+--Signing ShareHolder - Both Individual & Corporate
+[/SHRC=SELECT '________________________',
+CASE WHEN RM.RefType <> 'I' THEN '[NAME] for and on behalf of '+CHAR(10)+RM.Name
+    WHEN RM.RefType = 'I' THEN (CASE WHEN NameFormat = 1 THEN RM.Initials + ' '+RM.Name +' '+ RM.ChnsName WHEN NameFormat = 2 THEN RM.Name +' '+ RM.Initials +' '+ RM.ChnsName END) 
+    ELSE RM.Name +' '+ RM.ChnsName END AS FullName, 'Shareholder', ''
+FROM RefMaster RM
+INNER JOIN CR_Shareholders SH ON RM.RefCode=SH.AddrCode
+WHERE SH.EntCode='(-EntCode-)' AND SharesHeld>0 ORDER BY FullName/]
