@@ -1,0 +1,113 @@
+[/GENMETHOD=OPENXML/]
+
+[/DATEINC=SELECT FORMAT(IncorpDate,'d MMMM yyyy') AS FullDate, DATEPART(YYYY, IncorpDate) AS Yr, DATEPART(M, IncorpDate) AS Mon, DATEPART(D, IncorpDate)AS Dy,
+IncorpNr AS IncNr
+FROM Entity
+WHERE EntCode = '(-EntCode-)'/]
+
+[/CURDATE=SELECT FORMAT(IncorpDate,'d MMMM yyyy') AS FullDate, FORMAT (GETDATE(), 'dd') as Dy, FORMAT (GETDATE(), 'MMMM') as Mon, FORMAT (GETDATE(), 'yyyy') as Yr
+FROM Entity
+WHERE EntCode = '(-EntCode-)'/}
+
+
+Director  List
+[/ALLDIRLIST1=
+SELECT CASE WHEN R.RefType = 'I' THEN (CASE WHEN NameFormat = 1 THEN R.Initials + ' '+R.Name +' '+ R.ChnsName WHEN NameFormat = 2 THEN R.Name +' '+ R.Initials +' '+ R.ChnsName END) 
+ELSE R.Name +' '+ R.ChnsName END AS FullName,O.DateAppoint AS DateOfAppointment
+FROM Officers O INNER JOIN CR_RefMaster R ON R.RefCode=O.AddrCode
+INNER JOIN Compliance C ON C.AddrCode = O.AddrCode
+WHERE O.EntCode='(-EntCode-)' AND O.[Status]='A' AND O.OfficerType = 'DIR' AND O.Dateresign is NULL
+ORDER BY SeqNr/]
+
+[/ALLDIRLIST0=
+SELECT  CASE WHEN R.RefType = 'I' THEN (CASE WHEN NameFormat = 1 THEN R.Initials + ' '+R.Name +' '+ R.ChnsName WHEN NameFormat = 2 THEN R.Name +' '+ R.Initials +' '+ R.ChnsName END) 
+ELSE R.Name +' '+ R.ChnsName END AS FullName, CONCAT( FORMAT(O.DateAppoint, 'yyyy'), N'年', FORMAT(O.DateAppoint, 'MMMM'), N'月', FORMAT(O.DateAppoint, 'dd'), N'日 ') FROM Officers O 
+INNER JOIN CR_RefMaster R ON R.RefCode=O.AddrCode
+WHERE O.EntCode='(-EntCode-)' AND O.[Status]='A' AND O.OfficerType = 'DIR' AND O.Dateresign is NULL
+ORDER BY SeqNr/]
+
+
+
+
+Secretary List
+[/ALLSECRLIST=
+SELECT CASE WHEN R.RefType = 'I' THEN (CASE WHEN NameFormat = 1 THEN R.Initials + ' '+R.Name +' '+ R.ChnsName WHEN NameFormat = 2 THEN R.Name +' '+ R.Initials +' '+ R.ChnsName END) 
+ELSE R.Name +' '+ R.ChnsName END AS FullName, 
+FORMAT(O.DateAppoint, 'd MMMM yyyy') AS DateOfAppointment
+FROM Officers O INNER JOIN CR_RefMaster R ON R.RefCode=O.AddrCode
+WHERE O.EntCode='(-EntCode-)' AND O.[Status]='A' AND O.OfficerType IN ('SEC','SEJ') AND O.Dateresign is NULL
+ORDER BY SeqNr/]
+
+---Shareholder lists on Interests-----------
+[/SHRLIST=
+SELECT CASE WHEN RM.RefType = 'I' THEN (CASE WHEN NameFormat = 1 THEN RM.Initials + ' '+RM.Name+' '+RM.ChnsName WHEN NameFormat = 2 THEN RM.Name +' '+ RM.Initials+' '+RM.ChnsName END) ELSE RM.Name+' '+RM.ChnsName END AS FullName, 
+CONCAT ('- ' ,FORMAT(SI.NrShare, '###,###,###,###,###,###.############') ,' - ([ ]%)')
+from Share_Interests SI
+INNER JOIN Share_Capital SC On SI.EntCode = SC.EntCode AND SI.ShareClass = SC.ShareClass
+INNER JOIN CR_RefMaster RM ON SI.AddrCode = RM.RefCode
+WHERE SI.EntCode = '(-EntCode-)' and SI.IntType = 'MSH' and SI.NrShare > 0 and DateEnd IS NULL ORDER BY FullName/]
+
+
+Share Divided Into
+[/SHRDT=SELECT [CURRENCY], CapAuth, FORMAT(DividedInto, '###,###,###,###,###,###.############') AS DividedInto, ShareClassName, NomValShare 
+FROM CR_ShareCapital WHERE EntCode='(-EntCode-)' AND DividedInto <>'0'/]
+
+[/SHARECAP=SELECT [CURRENCY], SUM(CapAuth) AS CapAuth, [CURRENCY] + '' +FORMAT(SUM(CapAuth),'###,###,###,###,###,###.00##########') as CapAuth 
+FROM CR_ShareCapital WHERE EntCode = '(-EntCode-)' GROUP BY [CURRENCY] ORDER BY [Currency]/]
+
+Currency +  FORMAT(CapAuth, '###,###,###.00##########')
+
+[/SHAREDIV=SELECT FORMAT(SUM(DividedInto),'###,###,###,###,###,###.############') AS DividedInto FROM CR_ShareCapital WHERE EntCode='(-EntCode-)'/]
+
+[/SHOWP1=select * from IdentityRegister where RefCode='(-EntCode-)' AND IdType='INC' AND FromDate>=CAST('2006-01-01' AS DATE)/]
+
+[/SHOWP2=select * from IdentityRegister where RefCode='(-EntCode-)' AND IdType='INC' AND FromDate<=CAST('2005-12-31' AS DATE)/]
+
+Block satement to display when incorp date > 2006-01-01
+[/INCORPDATEGT= Select IncorpDate from Entity WHERE EntCode='(-EntCode-)' and IncorpDate > '2006-01-01 00:00:00.000'/]
+
+Block satement to display when incorp date <=   2005-12-31
+[/INCORPDATELE= Select IncorpDate from Entity WHERE EntCode='(-EntCode-)' and IncorpDate <= '2005-12-31 00:00:00.000'/]
+
+[/SHARECLASS=SELECT [CURRENCY], FORMAT(SUM(CapAuth),'###,###,###,###,###,###.00##########') AS CapAuth FROM CR_ShareCapital WHERE EntCode = '(-EntCode-)' GROUP BY [CURRENCY] ORDER BY [Currency]/]
+
+
+
+[/SHRDT1=SELECT FORMAT(DividedInto,'###,###,###,###,###,###.############') AS DividedInto, 
+[CURRENCY] + '' +CONVERT(VARCHAR, CAST(NomValShare AS MONEY),1) as NShare,
+[CURRENCY] + '' +CONVERT(VARCHAR, CAST(SUM(CapAuth) AS MONEY),1) as TotalCap
+FROM CR_ShareCapital WHERE EntCode = '(-EntCode-)'  GROUP BY DividedInto, [CURRENCY],NomValShare ORDER BY [Currency]/]
+
+
+[/SHRDT0=SELECT FORMAT(DividedInto,'###,###,###,###,###,###.############') AS DividedInto, 
+CONVERT(VARCHAR, CAST(NomValShare AS MONEY),1) as NShare,
+[CURRENCY] + '' +CONVERT(VARCHAR, CAST(SUM(CapAuth) AS MONEY),1) as TotalCap
+FROM CR_ShareCapital WHERE EntCode = '(-EntCode-)'  GROUP BY DividedInto, [CURRENCY],NomValShare ORDER BY [Currency]/]
+
+
+[/BSHARE=SELECT NomValShare FROM CR_ShareCapital WHERE EntCode='(-EntCode-)' AND NomValShare > 0/]
+
+[/BSHARENONE=SELECT NomValShare FROM CR_ShareCapital WHERE EntCode='(-EntCode-)' AND NomValShare = 0/]
+
+[/ISORPREFIX=select Case when COUNT(distinct Currency) = 1 then 'is' when COUNT(distinct Currency) > 1 then 'are' else '' end as IsOrPrefix from CR_ShareCapital where EntCode = '(-EntCode-)'/]
+
+[/SHARECLASS1=SELECT [CURRENCY] + FORMAT(SUM(CapAuth),'###,###,###,###,###.00##########') AS CapAuth, [CURRENCY] + '' +CONVERT(VARCHAR, FORMAT(SUM(CapAuth),'###,###,###,###,###,###.00##########'),1) as TotalCap 
+FROM CR_ShareCapital WHERE EntCode = '(-EntCode-)' GROUP BY [CURRENCY] ORDER BY [Currency]/]
+
+[/EntECName=SELECT TRIM(CASE WHEN RefType = 'I' THEN Initials + ' '+ Name ELSE Name END +' ' + ChnsName) AS FullName 
+FROM CR_Entity where EntCode='(-EntCode-)'/]
+
+[/CheckCName=SELECT ChnsName AS CName
+FROM CR_Entity where EntCode='(EntCode)'/]
+
+Document index code:
+[/DMW.DocIndex|Descr=(-DCM.Description-)|Cabinet=CLSTAT|VpDocId=(-FRM.FQnumber-)|DocConf=0|Note={Add any (default) note if desired}|/]
+
+Main Master File index 
+[/DMW.Relation|KeyTag=INDEX|KeyValue=(-EVT.KeyCode-)|/]
+
+Index field
+[/DMW.Relation|KeyTag=DOCDATE|KeyValue=(-EVT.DateEffective-)|/]
+
+Index field
+[/DMW.Relation|KeyTag=STATYP|KeyValue=ST06|/]
